@@ -20,34 +20,23 @@ function compressionFilter(req, res) {
  * Adds headers to a response to enable caching.
  */
 function cacheControl() {
-    return function(req, res, next) {
+    return function (req, res, next) {
         res.setHeader("Cache-Control", "public, max-age=300");
         return next();
     };
 }
 
-function logger() {
-    express.logger.token("date", function() {
-        return new Date().toISOString();
-    });
-    express.logger.token("response-all", function(req, res) {
-        return (res._header ? res._header : "").trim();
-    });
-    express.logger.token("request-all", function(req, res) {
-        return util.inspect(req.headers);
-    });
-    return express.logger(
-        ':date - info: :remote-addr :req[cf-connecting-ip] :req[cf-ipcountry] :method :url HTTP/:http-version ' +
-        '":user-agent" :referrer :req[cf-ray] :req[accept-encoding]\\n:request-all\\n\\n:response-all\\n');
-}
+// Logger function removed - using morgan instead
 
 var port = process.argv[2];
 var express = require("express");
+var compression = require("compression");
+var morgan = require("morgan");
 var app = express();
 
 app.use(cacheControl());
-app.use(express.compress({filter: compressionFilter}));
-app.use(logger());
+app.use(compression({ filter: compressionFilter }));
+app.use(morgan('combined'));
 app.use(express.static("public"));
 
 app.listen(port);
